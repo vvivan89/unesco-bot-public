@@ -8,7 +8,7 @@ require('./models.js');
 
 /*
     module used to fill database with data from whc.unesco.org
-    pdate (annual new incsriptions to the list) mechanics are not deined
+    update (annual new inscriptions to the list) mechanics are not defined
     to update, it is possible to kill all collections manually and let the bot to fill the database once again
 */
 mongoose.Promise = global.Promise;
@@ -141,7 +141,7 @@ function checkExceptions(text) {
 function parse (body, tag) {
     let parsedText=checkExceptions(cheerio.load(body)(tag).text()); //country name replacement, see above
     parsedText = parsedText.replace(/<\s*[^>]*>/g,''); //tags
-    parsedText = parsedText.replace(/&#?[a-z0-9]+;/g, '') //special sybmols
+    parsedText = parsedText.replace(/&#?[a-z0-9]+;/g, '') //special symbols
     return parsedText;
 }
 

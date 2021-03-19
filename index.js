@@ -52,7 +52,7 @@ bot.hears(/\/start/, async (ctx) => {
     //remove all previous session data if there was any
     clear(ctx)
 
-    //ghow "Greeting" screen (see "screens.js")
+    //show "Greeting" screen (see "screens.js")
     await commonScreens(loc, ctx, 'greeting','','',true)
 });
 
@@ -64,11 +64,11 @@ bot.hears(/\/lang/, async (ctx) => {
     //remove all previous session data if there was any
     clear(ctx)
 
-    //ghow "Language" screen (see "screens.js")
+    //show "Language" screen (see "screens.js")
     await commonScreens(loc, ctx, 'language')
 });
 
-//any other text (user search, etc)
+//any other text (user search, etc.)
 bot.hears(/^((?!.*(\/start|\/lang).*).)*$/, async (ctx) => {
     //always get localized variables first
     const loc = await getChatLocale(ctx)
@@ -118,7 +118,7 @@ bot.hears(/^((?!.*(\/start|\/lang).*).)*$/, async (ctx) => {
     }
 });
 
-//when user sends their location, bot searches newarest items
+//when user sends their location, bot searches nearest items
 bot.on('location', async (ctx)=>{
     //always get localized variables first
     const loc = await getChatLocale(ctx)
@@ -147,7 +147,7 @@ bot.on("callback_query", async (ctx) => {
     //always get localized variables first
     let loc = await getChatLocale(ctx)
 
-    //if inline button is pressed after bot restard, locale could not be found
+    //if inline button is pressed after bot restart, locale could not be found
     //we shoe notification about it and ask user to send "/start" command
     if (!loc) {
         await message(ctx, locales.common, {},true)
@@ -172,18 +172,18 @@ bot.on("callback_query", async (ctx) => {
         ctx.session.distanceMoved = true
 
         //get the new distance that user wants to search
-        const modifier = req.split('_')[1] //unmber with a sign
+        const modifier = req.split('_')[1] //number with a sign
         const sign=modifier.substr(0,1) //sign
         const num = Number(modifier.substr(1)) //number
         const additionalDist = num*(sign==='+' ? 1 : -1) //plus or minus the number
-        ctx.session.searchResult.distance = Math.max(1, additionalDist+ctx.session.searchResult.distance) //calulate the new distance
+        ctx.session.searchResult.distance = Math.max(1, additionalDist+ctx.session.searchResult.distance) //calculate the new distance
 
         //search for the items once again
         await searchItems(loc, ctx)
     
     //case 3: user wants to see site details
     } else if (req.startsWith('full_')) {
-        //change status because we don't want to nahdle user input in this session anymore
+        //change status because we don't want to handle user input in this session anymore
         ctx.session.status = 'siteDetails'
 
         //get the site index in the array of found sites
@@ -196,13 +196,13 @@ bot.on("callback_query", async (ctx) => {
             locationStart:0
         }
 
-        //show site setails
+        //show site details
         await showSiteDetails(loc,ctx)
 
     //case 4: user navigates through the site list
     //list is displayed by 10 items in one message and shows pagination arrows
     } else if (req.startsWith('start')) {
-        //get the directon, where user wants to go
+        //get the direction, where user wants to go
         const dir=req.substr(5,1)
 
         //+ means go forward, minus - go back
@@ -217,7 +217,7 @@ bot.on("callback_query", async (ctx) => {
     //case 5: user navigates through the site locations list
     //logic is same as above
     } else if (req.startsWith('locationStart')) {
-         //get the directon, where user wants to go
+         //get the direction, where user wants to go
         const dir=req.substr(13,1)
 
         //+ means go forward, minus - go back
@@ -229,13 +229,13 @@ bot.on("callback_query", async (ctx) => {
         //show the new part of the locations list
         await showLocationList(loc,ctx)
 
-    //case 6: user wants to see partiular location of the particular site
+    //case 6: user wants to see particular location of the particular site
     } else if (req.startsWith('locationDetails_')) {
         //get the location index in the array locations of the current site
         const index=Number(req.substr(16))
         ctx.session.site.locationIndex=index
 
-        //get the location gps data
+        //get the location GPS data
         const {latitude, longitude} = ctx.session.searchResult.siteList[ctx.session.site.index].locations[index]
 
         //send message with location (telegram does not allow to add text or buttons to it)
@@ -244,10 +244,10 @@ bot.on("callback_query", async (ctx) => {
         //send message with buttons to invite user to return to search results, site details, etc.
         await commonScreens(loc, ctx, 'locationShown', '', ctx.session.site.index, true)
 
-    //case 7: user wants to start search with criteria from the screen that describes all criterias
+    //case 7: user wants to start search with criteria from the screen that describes all criteria
     } else if (req.startsWith('criteria_')) {
 
-        //get the critearia that user wants to search
+        //get the criteria that user wants to search
         const crit = req.split('_')[1]
 
          //if this is the first search in this session, create an empty object to avoid error
@@ -290,7 +290,7 @@ bot.on("callback_query", async (ctx) => {
                 //user is satisfied with the number of found items and wants to see the list
                 //or they return from the details of some other site back to the list
 
-                //if there's only one site in the search, no piont in showing the list
+                //if there's only one site in the search, no point in showing the list
                 const count = ctx.session.searchResult?.siteList?.length
                 if(count===1){
                     ctx.session.status = 'siteDetails'
@@ -305,7 +305,7 @@ bot.on("callback_query", async (ctx) => {
                 } else {
                     ctx.session.status = 'resultList'
 
-                    //if prevously we showed a particular site, now we do not want to have information about it
+                    //if previously we showed a particular site, now we do not want to have information about it
                     ctx.session.site = null
                     
                     //send the list
@@ -313,14 +313,14 @@ bot.on("callback_query", async (ctx) => {
                 }
             break;
             case 'info_country':
-                //user wants to see all the countries that have usesco sites with the number of sites for each country
+                //user wants to see all the countries that have UNESCO sites with the number of sites for each country
                 //this screen is just informational
                 const countries = await getCountryList(ctx.session.siteList)
                 await commonScreens(loc,ctx,'countryList',countries.string)
             break;
             case 'info_criteria':
                 //bot sends description of all unesco criteria
-                //also there are buttons that allow user to start search irectly from that screen
+                //also there are buttons that allow user to start search directly from that screen
                 await commonScreens(loc,ctx,'criteriaList')
             break;
             case 'no_cancel_search':
@@ -358,7 +358,7 @@ async function commonScreens(loc, ctx, name, upperText='', lowerText='', newMess
         mappedKB=kb.map((row, i)=>{
             //nested arrays define each button in a row
             return row.map((btn,j)=>{
-                //if we don't want to show particular button, kbMap will have a bo0lean "false" item in the array
+                //if we don't want to show particular button, kbMap will have a Boolean "false" item in the array
                 //if there is no such item (undefined), the button must stay
                 if(kbMap[i] && kbMap[i][j]===false ){
                     return null
@@ -369,7 +369,7 @@ async function commonScreens(loc, ctx, name, upperText='', lowerText='', newMess
         //remove rows without buttons
         }).filter(item=>item && item.length>0)
     }
-    //send message with the markup from "screens.js" with or withour alternations to keyboard
+    //send message with the markup from "screens.js" with or without alternations to keyboard
     const markup = {reply_markup: { inline_keyboard: mappedKB || {} }}
     await message(ctx, text, markup,newMessage)
 }
@@ -388,7 +388,7 @@ async function getChatLocale(ctx, forced=null) {
         if(ctx.message) {
             const localeList = await getLocale.find({ chatID: ctx.message.chat.id }).limit(1)
             if(localeList.length > 0){loc = localeList[0].locale}
-            //set chatID as well, because whe user sends callback data, it is hard to get the chat id from it
+            //set chatID as well, because when user sends callback data, it is hard to get the chat id from it
             ctx.session.chatID = ctx.message.chat.id
         }
 
@@ -409,12 +409,12 @@ async function setChatLocale(ctx, loc) {
     //first, search is that user already has saved language preference
     const localeList = await getLocale.find({ chatID: ctx.session.chatID }).limit(1)
 
-    //if yes, chage it and update database
+    //if yes, change it and update database
     if (localeList.length !== 0) {
         localeList[0].locale = loc;
         localeList[0].save();
     } else {
-    //if user never changed their language before, sreate new record to the database
+    //if user never changed their language before, create new record to the database
     //store only chat ID and language currently
         const writeLocale = new getLocale({
             chatID:ctx.session.chatID,
@@ -513,7 +513,7 @@ async function searchItems(loc, ctx){
                             //if a match is found, we use MongoDB ID to then get all items
                             const v = JSON.stringify(site._id)
 
-                            //make a set of inuque findings
+                            //make a set of unique findings
                             if (!result.includes(v)) { result.push(v) }
                         }
                     })
@@ -601,7 +601,7 @@ async function searchItems(loc, ctx){
         requestText += `\n${loc.strings.request.replace('%request%',replacedSearch)}`
     }
 
-    //whith the location search, show istance of the search and the distance to the nearest site
+    //with the location search, show radius of the search and the radius to the nearest site
     if(ctx.session.searchResult?.distance){
         requestText += `\n${loc.strings.requestGPS.replace('%km%',ctx.session.searchResult.distance)}.`+
             ` ${loc.strings.nearestSite.replace('%km%',ctx.session.searchResult.nearest)}`
@@ -614,17 +614,17 @@ async function searchItems(loc, ctx){
 
     //send info about the number of found items
     //if there's only one item in the search results, the button caption will change
-    //from "show list" ot "show item"
+    //from "show list" f "show item"
     await commonScreens(loc, ctx, screenName,requestText,totalArray.length===1,false,kbMap)
 }
 
 //searches sites based on distance to the user location
 async function locationSearch(list,latitude, longitude, distance=0){
     //if initial distance is zero, function will extend it until at least 3 sites are found
-    //othrwise it will only search within the provided distance (because this distance is requested by user)
+    //otherwise it will only search within the provided distance (because this distance is requested by user)
     const iterable = distance===0
 
-    //first, calculate disnatces to all sites and pop nearest to top
+    //first, calculate distances to all sites and pop nearest to top
     const distanceArray = list.map((item,i)=>{
         let d=calcDistance(item,latitude, longitude)
         return {
@@ -649,7 +649,7 @@ async function locationSearch(list,latitude, longitude, distance=0){
     return {items:locArray, distance, nearest}
 }
 
-//fucntion makes string from found sites (with short info) and sends a message to the user
+//function makes string from found sites (with short info) and sends a message to the user
 async function showSiteList(loc, ctx){
     //get the start point (if he number of found items is more than 10)
     const {siteList, start} = ctx.session.searchResult
@@ -665,7 +665,7 @@ async function showSiteList(loc, ctx){
     //future message string
     let result=''
 
-    //buttons will have indexes of items that are currenty shown
+    //buttons will have indexes of items that are currently shown
     //on press they will show the site detail with particular index
     const buttons=[]
 
@@ -712,7 +712,7 @@ async function showSiteList(loc, ctx){
         //if the page is not the first, we show "back" button on the left of the "new search" button
         if(start>0){bottomButtonRow.splice(0,0,{text:'<<',callback_data:'start-'})}
 
-        //if the page is not the last, show "next" button ont he right of the "new search" button
+        //if the page is not the last, show "next" button on the right of the "new search" button
         if(siteList.length>end+1){bottomButtonRow.push({text:'>>',callback_data:'start+'})}
     }
     //add final button row to all the buttons with indexes
@@ -731,7 +731,7 @@ async function showSiteDetails(loc, ctx){
     const site = ctx.session.searchResult.siteList[index]
 
     //show notification if there is no information for this site in the user preferred language
-    //noe: English info will be shown
+    //note: English info will be shown
     const noInfoText=site.noInfo ? `${loc.strings.noLangInfo}\n\n` : ''
 
     //if there was a location provided, show distance to  the closest location of this site
@@ -753,7 +753,7 @@ async function showSiteDetails(loc, ctx){
     await commonScreens(loc, ctx,'siteDetails',result,site.locations.length,false,kbMap)
 }
 
-//sengs a user the list of locations for the particular site
+//sends a user the list of locations for the particular site
 async function showLocationList(loc, ctx){
     //get the requested site details
     const {index, locationStart} = ctx.session.site
@@ -773,7 +773,7 @@ async function showLocationList(loc, ctx){
         //future message string
         let result=''
 
-        //buttons will have indexes of items that are currenty shown
+        //buttons will have indexes of items that are currently shown
         //on press they will show the location with the particular index
         const buttons=[]
 
@@ -811,7 +811,7 @@ async function showLocationList(loc, ctx){
             //if the page is not the first, we show "back" button on the left of the "new search" button
             if(locationStart>0){bottomButtonRow.splice(0,0,{text:'<<',callback_data:'locationStart-'})}
 
-            //if the page is not the last, show "next" button ont he right of the "new search" button
+            //if the page is not the last, show "next" button on the right of the "new search" button
             if(locations.length>end+1){bottomButtonRow.push({text:'>>',callback_data:'locationStart+'})}
         }
 
@@ -837,10 +837,10 @@ async function showLocationList(loc, ctx){
     } else {
         const {latitude, longitude} = locations[0]
 
-        //send locaiton message (not allowed to add text or buttons to it)
+        //send location message (not allowed to add text or buttons to it)
         await ctx.replyWithLocation(latitude, longitude)
 
-        //send message that instructs user what to do next and offers buttons to return to noew screen, search results, etc.
+        //send message that instructs user what to do next and offers buttons to return to home screen, search results, etc.
         await commonScreens(loc, ctx,'locationShown',loc.strings.oneLocation,ctx.session.site.index,true,[[true,false,true,true]])
     }
 }
@@ -886,7 +886,7 @@ function distanceKM(lat1, lon1, lat2, lon2) {
     return earthRadiusKm * c;
 }
 
-//function loops through all locaiotns of the site and returns the closest distance
+//function loops through all locations of the site and returns the closest distance
 function calcDistance(item, latitude, longitude){
     let d=null;
 
@@ -894,7 +894,7 @@ function calcDistance(item, latitude, longitude){
     if(item.latitude || item.longitude){
         d=distanceKM(latitude, longitude, item.latitude, item.longitude);
     } else if(item.locations) {
-    //loop through all locaitons and find the closest one
+    //loop through all locations and find the closest one
         item.locations.forEach(loc=>{
             const locD = distanceKM(latitude, longitude, loc.latitude, loc.longitude);
             if (d===null || d>locD) {d=locD}
@@ -950,7 +950,7 @@ async function getCountryList(list) {
 
     //get the count of sites in each country
     //note: some sites are counted more than once here and it is correct
-    //because the purpose is to show the nubmer of sites in each country, not the total number of sites
+    //because the purpose is to show the number of sites in each country, not the total number of sites
     let string = array.map((item, i) => {
         const count = countries.filter(c=>c===item).length
         return `${i+1}. ${item} (${count})`
@@ -960,7 +960,7 @@ async function getCountryList(list) {
     return {string, array}
 }
 
-//split array by the given delimiter ("," or "+") and remove accintal blanks
+//split array by the given delimiter ("," or "+") and remove accidental blanks
 //(e.g., is user inputs "something,,other")
 function searchToArray(filter, delimiter) {
     let filterArray= filter.split(delimiter).map(item=>item.trim());

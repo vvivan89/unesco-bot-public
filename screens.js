@@ -1,5 +1,8 @@
+//common screens used by bot
+//eases the communication with user by predefined keyboard buttons
+
 //this block creates two rows of buttons with criteria numbers
-//allows user to start text search by criteria from the descripption screen
+//allows user to start text search by criteria from the description screen
 const criteriaArray = [['(i)', '(ii)', '(iii)', '(iv)', '(v)'], ['(vi)', '(vii)', '(viii)', '(ix)', '(x)']]
 const criteriaListKB = criteriaArray.map(row => {
     return row.map(item => {
@@ -10,8 +13,9 @@ const criteriaListKB = criteriaArray.map(row => {
     })
 })
 
-//common screens used by bot
-//eases the communication with user by predefined keyboard buttons
+//function returns the localized screen text and keyboard layout
+//keyboard is an array of arrays: first layer represents rows of buttons
+//nested array describe button text and callback data
 function screens(locale, name, upperText="", lowerText="") {
     const screenList = {
         //starting screen (also shown when search is over)
@@ -67,7 +71,7 @@ function screens(locale, name, upperText="", lowerText="") {
 
         //alternate search result screen
         //when user provides location, distance is calculated as the minimum value that includes at least 3 sites
-        //users are offered to extend or shring the search distance manually
+        //users are offered to extend or shrink the search distance manually
         //in 50 and 100km increments
         searchResultGPS:{
             text: `${upperText}\n\n${locale.strings.searchResults}\n\n${locale.strings.locationRadius}`,
@@ -161,7 +165,7 @@ function screens(locale, name, upperText="", lowerText="") {
                 }]
             ]
         },
-        //informationla screen with list of countries
+        //informational screen with list of countries
         //does not do anything useful
         countryList: {
             text: upperText,
@@ -174,7 +178,7 @@ function screens(locale, name, upperText="", lowerText="") {
             kb: [
                 ...criteriaListKB,
                 /*
-                    this button allows to search all "tourictic" criteria at once
+                    this button allows to search all "touristic" criteria at once
                     (i) - most beautiful buildings
                     (iii) - unique buildings
                     (vii) - most beautiful nature sites
