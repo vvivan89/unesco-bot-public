@@ -22,8 +22,8 @@ mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('connected'))
-.catch(e => console.log(e));
+.then(() => console.log('MondoDB: connected successfully'))
+.catch(e => console.log('MongoDB error: ',e.message));
 
 //database instances
 const getLocale=mongoose.model('locales');
@@ -477,11 +477,20 @@ async function searchItems(loc, ctx){
     }
 
     //combine ids of all found items
-    let totalArray = []; //IDs of found items
-    let textSearchArray=[] //result of text search, that also contains key where the match was found
+    let totalArray = []
 
     //text parsing ("+"" means or, "," means and)
+    //also replace "+" and "," with localized "and" and "or"
+    let replacedSearch = ''
     if (search.text) {
+        //replace "+" with localized "or" word
+        const plus = new RegExp("\\+","gi")
+        replacedSearch = search.text.replace(plus, loc.strings.or)
+
+        //and "," with localized "and" word
+        const comma = new RegExp(",","gi")
+        replacedSearch = replacedSearch.replace(comma,loc.strings.and)
+
         //substrings, where any of the can be found (at least one)
         const concats = searchToArray(search.text, '+');
         concats.forEach(part => {
@@ -496,17 +505,15 @@ async function searchItems(loc, ctx){
                 siteList.forEach(site => {
                     //search substring in each key that is available for the site (year, criteria, name, description, etc.)
                     Object.entries(site).forEach(([key, value]) => {
-                        //do not search in locations
-                        if (value && key!=='locations' &&
+                        //do not search in technical keys, e.g. locale and locations
+                        //also exclude description ("text" key, search here will cause unpredictable results)
+                        if (value && !['locations','text','locale','_id','URL','noInfo'].includes(key) &&
                             value.toString().toLowerCase().includes(item.toLowerCase())) {
 
                             //if a match is found, we use MongoDB ID to then get all items
-                            //but also we save the key where the match was found
-                            const v = JSON.stringify({id:site._id, key})
+                            const v = JSON.stringify(site._id)
 
                             //make a set of inuque findings
-                            //however, one site can be saved several time if matches are foun in several keys
-                            //user then desides what matches to keep and what to discard
                             if (!result.includes(v)) { result.push(v) }
                         }
                     })
@@ -515,26 +522,9 @@ async function searchItems(loc, ctx){
                 tempResult=mixArrays(tempResult,result)
             })
             //get all items combined, but exclude duplicates
-            textSearchArray=mixArrays(textSearchArray,tempResult,true)
+            totalArray=mixArrays(totalArray,tempResult,true)
         })
     }
-    console.log(search.text)
-    //TODO: display information on where user text search is found (keys, e.g. country or title)
-    //currently keys from textSearchArray are not used
-    //extract MondoDB IDs from array and add them to resutls array
-    if(textSearchArray.length){
-        totalArray = textSearchArray.map(item=>{
-            //used stringify to make sure we have only unique combinations of key and id
-            const parsed = JSON.parse(item)
-
-            //MongoDB IDs will be compared as strings
-            return JSON.stringify(parsed.id)
-        })
-    }
-
-    //also, some sites may be duplicated if user search is found more than in one key
-    //so remove duplicates
-    totalArray = Array.from(new Set(totalArray))
 
     //now, search items by location
     if(search.longitude || search.latitude){
@@ -562,7 +552,7 @@ async function searchItems(loc, ctx){
 
             //cleanup that will allow to start a new search
             clear(ctx)
-            await commonScreens(loc, ctx, 'greeting',text.replace('%search%',(search.text || "")),'',true)
+            await commonScreens(loc, ctx, 'greeting',text.replace('%search%',(replacedSearch)),'',true)
 
         //if user narrowed the location search too much, let him to expand it back
         //so show distance adjustment buttons
@@ -606,16 +596,8 @@ async function searchItems(loc, ctx){
     let screenName= 'searchResult'
     let kbMap=[]
 
-    //also show the search that user did
+    //also show the search that user inputted
     if(search.text){
-        //first, replace "+" with localized "or" word
-        const plus = new RegExp("\\+","gi")
-        let replacedSearch = search.text.replace(plus, loc.strings.or)
-        //and "," with localized "and" word
-        const comma = new RegExp(",","gi")
-        replacedSearch = replacedSearch.replace(comma,loc.strings.and)
-
-        //insert request text in the localized string
         requestText += `\n${loc.strings.request.replace('%request%',replacedSearch)}`
     }
 
